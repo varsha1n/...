@@ -14,6 +14,11 @@ The Connection stays open so you can read, edit, or delete files as if they were
 
 The Watcher Script (on the Server) sees it as a "Mounted Path" (like //file-server/uploads)via a network path.
 
+| **Location of File**                    | **Path Used by User**                  | **Path Used by Watcher Script**            |
+| --------------------------------------- | -------------------------------------- | ------------------------------------------ |
+| **Physical Disk**                       | `D:\Data\Uploads` (on the File Server) | N/A                                        |
+| **User’s View (Mapped Drive)**          | `S:\Uploads`                           | N/A                                        |
+| **Watcher’s View (Server Access Path)** | N/A                                    | `/mnt/shared/uploads` or `\\Files\Uploads` |
 
 
 		
@@ -25,6 +30,17 @@ Station 1 (The Shared Folder): The file sits here. It is just a static piece of 
 Station 2 (The Watcher): Every 5 minutes, the Watcher script "knocks on the door" of the Shared Folder via the network. It asks the File Server: "Is there anything new?"
 
 Station 3 (The API Call): Once the Watcher finds a file, it pulls that data across the network into its own memory and uploads it to the Worker API.
+
+| **Step**      | **Action**                       | **Technology**       | **What’s happening**                                                  |
+| ------------- | -------------------------------- | -------------------- | --------------------------------------------------------------------- |
+| **Ingest**    | User drops file in `S:\uploads\` | SMB Protocol         | The Excel file is written to shared network storage.                  |
+| **Watch**     | Watcher scans the path           | `os.listdir()`       | Every 5 minutes, the script detects new Excel files.                  |
+| **Process**   | Script converts file             | `watcher_script.py`  | The Excel data is converted into `.lr` (comma-separated text) format. |
+| **API Call**  | Watcher sends `.lr` data         | HTTP POST            | The script sends the `.lr` file content to the Database API.          |
+| **Upload**    | API writes data to DB            | SQL `INSERT`         | The server stores the `.lr` content permanently in database tables.   |
+| **Next File** | Watcher waits for API response   | HTTP Response Object | The script receives `HTTP 200 Success` and proceeds to the next file. |
+
+
 
 
 
