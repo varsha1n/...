@@ -14,10 +14,6 @@ The Connection stays open so you can read, edit, or delete files as if they were
 
 The Watcher Script (on the Server) sees it as a "Mounted Path" (like //file-server/uploads)via a network path.
 
-Location of File	Path Used by User	Path Used by Watcher Script
-Physical Disk	D:\Data\Uploads (on the File Server)	N/A
-User's View	S:\Uploads	N/A
-Watcher's View	N/A	/mnt/shared/uploads or \\Files\Uploads
 
 
 		
@@ -31,13 +27,7 @@ Station 2 (The Watcher): Every 5 minutes, the Watcher script "knocks on the door
 Station 3 (The API Call): Once the Watcher finds a file, it pulls that data across the network into its own memory and uploads it to the Worker API.
 
 
-Step	Action	Technology	What's happening?
-Ingest	User drops file in S:\	SMB Protocol	The file is written to the network storage.
-Watch	Watcher scans the path	os.listdir()	Every 5 mins, the script finds the new Excel file.
-Process	Script runs convert	script.py	The Excel data is turned into .lr (text/CSV) format.
-API Call	Watcher sends data	HTTP POST	The script sends the .lr content to the Database API.
-Upload	API writes to DB	SQL / INSERT	The data is permanently saved in the database tables.
-Next file	Waits for response for API call 	HTTP Response Object	Watcher gets the API response and receives a "Success" (HTTP 200) from DB
-it moves to the next file
+
+
 
 
