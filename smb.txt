@@ -1,0 +1,43 @@
+1.The Protocol: The folder is "broadcasted" over the company network using a protocol called SMB (Server Message Block) for Windows or NFS (Network File System) for Linux.
+
+How SMB Works (The Basics)
+SMB operates on a Client-Server model.
+
+The Client (your computer) sends a request to access a file or printer.
+
+The Server (the file share or device) verifies your identity and permissions.
+
+The Connection stays open so you can read, edit, or delete files as if they were physically on your own hard drive.
+
+
+2.The Mapping: * Users see it as a "Network Drive" (like the S: Drive).
+
+The Watcher Script (on the Server) sees it as a "Mounted Path" (like //file-server/uploads)via a network path.
+
+Location of File	Path Used by User	Path Used by Watcher Script
+Physical Disk	D:\Data\Uploads (on the File Server)	N/A
+User's View	S:\Uploads	N/A
+Watcher's View	N/A	/mnt/shared/uploads or \\Files\Uploads
+
+
+		
+3. The Logical Flow
+The data doesn't "jump" directly to the database. It moves through these "stations":
+
+Station 1 (The Shared Folder): The file sits here. It is just a static piece of data on a hard drive.
+
+Station 2 (The Watcher): Every 5 minutes, the Watcher script "knocks on the door" of the Shared Folder via the network. It asks the File Server: "Is there anything new?"
+
+Station 3 (The API Call): Once the Watcher finds a file, it pulls that data across the network into its own memory and uploads it to the Worker API.
+
+
+Step	Action	Technology	What's happening?
+Ingest	User drops file in S:\	SMB Protocol	The file is written to the network storage.
+Watch	Watcher scans the path	os.listdir()	Every 5 mins, the script finds the new Excel file.
+Process	Script runs convert	script.py	The Excel data is turned into .lr (text/CSV) format.
+API Call	Watcher sends data	HTTP POST	The script sends the .lr content to the Database API.
+Upload	API writes to DB	SQL / INSERT	The data is permanently saved in the database tables.
+Next file	Waits for response for API call 	HTTP Response Object	Watcher gets the API response and receives a "Success" (HTTP 200) from DB
+it moves to the next file
+
+
